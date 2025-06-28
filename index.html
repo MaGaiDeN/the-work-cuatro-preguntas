@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Las Cuatro Preguntas - The Work</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0f172a;
+            color: #e2e8f0;
+        }
+        .card {
+            background-color: #1e293b;
+            border-radius: 1rem;
+            padding: 2rem;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            border: 1px solid #334155;
+            transition: all 0.3s ease-in-out;
+        }
+        .fade-in {
+            animation: fadeIn 0.5s ease-in-out forwards;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        textarea {
+            resize: none;
+            background-color: #334155;
+            border-color: #475569;
+            color: #e2e8f0;
+        }
+        textarea:focus {
+            background-color: #475569;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+        textarea::placeholder {
+            color: #94a3b8;
+        }
+        input {
+            background-color: #334155;
+            border-color: #475569;
+            color: #e2e8f0;
+        }
+        input:focus {
+            background-color: #475569;
+            border-color: #3b82f6;
+        }
+        .progress-bar {
+            transition: width 0.3s ease-in-out;
+        }
+        .step-indicator {
+            transition: all 0.3s ease-in-out;
+            background-color: #475569;
+            color: #94a3b8;
+        }
+        .step-indicator.active {
+            background-color: #3b82f6;
+            color: white;
+        }
+        .step-indicator.completed {
+            background-color: #10b981;
+            color: white;
+        }
+        .auto-save-indicator {
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out;
+        }
+        .auto-save-indicator.show {
+            opacity: 1;
+        }
+        .dark-card {
+            background-color: #334155;
+            border-color: #475569;
+        }
+        .dark-text {
+            color: #cbd5e1;
+        }
+        .dark-text-muted {
+            color: #94a3b8;
+        }
+        .dark-border {
+            border-color: #475569;
+        }
+    </style>
+</head>
+<body class="bg-slate-900 text-slate-200 flex items-center justify-center min-h-screen p-4">
+
+    <main class="w-full max-w-2xl mx-auto">
+        <!-- Progress Bar -->
+        <div id="progress-container" class="mb-6 hidden">
+            <div class="flex justify-between items-center mb-2">
+                <span class="text-sm font-medium text-slate-400">Progreso</span>
+                <span id="progress-text" class="text-sm font-medium text-slate-400">Paso 1 de 6</span>
+            </div>
+            <div class="w-full bg-slate-700 rounded-full h-2">
+                <div id="progress-bar" class="progress-bar bg-blue-500 h-2 rounded-full" style="width: 0%"></div>
+            </div>
+            <!-- Step Indicators -->
+            <div class="flex justify-between mt-4">
+                <div class="step-indicator flex items-center justify-center w-8 h-8 rounded-full text-sm font-medium" data-step="0">P</div>
+                <div class="step-indicator flex items-center justify-center w-8 h-8 rounded-full text-sm font-medium" data-step="1">1</div>
+                <div class="step-indicator flex items-center justify-center w-8 h-8 rounded-full text-sm font-medium" data-step="2">2</div>
+                <div class="step-indicator flex items-center justify-center w-8 h-8 rounded-full text-sm font-medium" data-step="3">3</div>
+                <div class="step-indicator flex items-center justify-center w-8 h-8 rounded-full text-sm font-medium" data-step="4">4</div>
+                <div class="step-indicator flex items-center justify-center w-8 h-8 rounded-full text-sm font-medium" data-step="5">I</div>
+            </div>
+        </div>
+
+        <div id="app-container" class="card">
+            <!-- Auto-save indicator -->
+            <div id="auto-save-indicator" class="auto-save-indicator text-xs text-green-400 mb-4 text-center">
+                ✓ Guardado automáticamente
+            </div>
+
+            <!-- Session Recovery Banner -->
+            <div id="recovery-banner" class="hidden mb-4 p-4 bg-yellow-900/20 border border-yellow-600/30 rounded-lg">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-yellow-200">Se encontró una sesión anterior</p>
+                        <p class="text-xs text-yellow-300">¿Deseas continuar donde lo dejaste?</p>
+                    </div>
+                    <div class="flex space-x-2">
+                        <button onclick="loadPreviousSession()" class="text-xs bg-yellow-600 text-white px-3 py-1 rounded hover:bg-yellow-700">Continuar</button>
+                        <button onclick="startFresh()" class="text-xs bg-slate-600 text-white px-3 py-1 rounded hover:bg-slate-700">Empezar nuevo</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 0: Initial Thought Input -->
+            <div id="step-0" class="space-y-6 fade-in">
+                <div class="text-center">
+                    <h1 class="text-2xl md:text-3xl font-bold text-slate-100">The Work: Las Cuatro Preguntas</h1>
+                    <p class="mt-2 text-slate-400">Juzga a tu prójimo, escríbelo en papel.</p>
+                </div>
+                <div class="space-y-4">
+                    <label for="thought" class="block text-lg font-medium text-slate-200">¿Cuál es tu pensamiento estresante?</label>
+                    <p class="text-sm text-slate-400">Ejemplo: "Mi pareja no me escucha", "No soy lo suficientemente bueno/a", "Mi jefe no me valora".</p>
+                    <textarea id="thought" class="w-full p-3 border rounded-lg focus:ring-2 transition" rows="3" placeholder="Escribe aquí tu pensamiento..."></textarea>
+                    <div id="thought-error" class="text-red-400 text-sm hidden">Por favor, escribe un pensamiento para comenzar.</div>
+                </div>
+                <button onclick="startWork()" class="w-full bg-blue-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-transform transform hover:scale-105">
+                    Comenzar a Indagar
+                </button>
+            </div>
+
+            <!-- Steps 1-4: The Questions -->
+            <div id="questions-container" class="hidden space-y-6">
+                <div class="p-4 bg-blue-900/20 border border-blue-600/30 rounded-lg">
+                    <p class="font-medium text-slate-200">Tu pensamiento:</p>
+                    <p id="thought-display" class="text-lg text-blue-300"></p>
+                </div>
+                <div id="question-card" class="space-y-4 fade-in">
+                    <h2 id="question-title" class="text-xl md:text-2xl font-bold text-slate-100"></h2>
+                    <p id="question-subtitle" class="text-slate-300"></p>
+                    <textarea id="answer" class="w-full p-3 border rounded-lg focus:ring-2 transition" rows="6" placeholder="Tómate tu tiempo. Siente la respuesta antes de escribir..."></textarea>
+                </div>
+                 <div id="yes-no-buttons" class="hidden justify-center space-x-4">
+                    <button onclick="answerYesNo(true)" class="bg-green-500 text-white font-bold py-2 px-8 rounded-lg hover:bg-green-600 transition-transform transform hover:scale-105">Sí</button>
+                    <button onclick="answerYesNo(false)" class="bg-red-500 text-white font-bold py-2 px-8 rounded-lg hover:bg-red-600 transition-transform transform hover:scale-105">No</button>
+                </div>
+                <!-- Navigation Buttons -->
+                <div class="flex space-x-3">
+                    <button id="back-button" onclick="goBack()" class="bg-slate-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-500 transition-transform transform hover:scale-105">
+                        ← Atrás
+                    </button>
+                    <button id="next-button" onclick="nextStep()" class="flex-1 bg-indigo-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-transform transform hover:scale-105">
+                        Siguiente Pregunta
+                    </button>
+                </div>
+            </div>
+
+            <!-- Step 5: The Turnaround -->
+            <div id="turnaround-container" class="hidden space-y-6 fade-in">
+                <div class="text-center">
+                    <h1 class="text-2xl md:text-3xl font-bold text-slate-100">La Inversión</h1>
+                    <p class="mt-2 text-slate-400">Invierte el pensamiento original. ¿Podría ser tan o más verdadero que el original?</p>
+                </div>
+                <div class="p-4 bg-slate-700/50 border border-slate-600 rounded-lg">
+                    <p class="font-medium text-slate-200">Pensamiento Original:</p>
+                    <p id="turnaround-thought-display" class="text-lg text-slate-100"></p>
+                </div>
+                <div class="space-y-4">
+                    <label for="turnaround" class="block text-lg font-medium text-slate-200">Escribe la inversión.</label>
+                    <p class="text-sm text-slate-400">Invierte el pensamiento hacia ti, hacia el otro, o dale la vuelta por completo. Encuentra 3 ejemplos específicos y genuinos de cómo esta inversión es verdadera en tu vida.</p>
+                    <textarea id="turnaround" class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-green-500 transition" rows="6" placeholder="Ej: 'Yo no me escucho a mí mismo/a.'..."></textarea>
+                </div>
+                <!-- Navigation Buttons -->
+                <div class="flex space-x-3">
+                    <button onclick="goBack()" class="bg-slate-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-500 transition-transform transform hover:scale-105">
+                        ← Atrás
+                    </button>
+                    <button onclick="showSummary()" class="flex-1 bg-green-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-transform transform hover:scale-105">
+                        Ver mi Resumen
+                    </button>
+                </div>
+            </div>
+
+            <!-- Step 6: Summary -->
+            <div id="summary-container" class="hidden space-y-8 fade-in">
+                <div class="text-center">
+                    <h1 class="text-2xl md:text-3xl font-bold text-slate-100">Tu Trabajo</h1>
+                    <p class="mt-2 text-slate-400">Aquí tienes un resumen de tu indagación.</p>
+                </div>
+                <div class="space-y-6">
+                    <div class="p-4 bg-slate-700/50 rounded-lg border border-slate-600">
+                        <h3 class="font-bold text-slate-200">Pensamiento:</h3>
+                        <p id="summary-thought" class="mt-1 text-lg text-slate-100"></p>
+                    </div>
+                    <div class="p-4 bg-slate-700/50 rounded-lg border border-slate-600">
+                        <h3 class="font-bold text-slate-200">1. ¿Es verdad?</h3>
+                        <p id="summary-answer-1" class="mt-1 whitespace-pre-wrap text-slate-300"></p>
+                    </div>
+                    <div class="p-4 bg-slate-700/50 rounded-lg border border-slate-600">
+                        <h3 class="font-bold text-slate-200">2. ¿Puedes saber que es verdad con absoluta certeza?</h3>
+                        <p id="summary-answer-2" class="mt-1 whitespace-pre-wrap text-slate-300"></p>
+                    </div>
+                     <div class="p-4 bg-slate-700/50 rounded-lg border border-slate-600">
+                        <h3 class="font-bold text-slate-200">3. ¿Cómo reaccionas, qué sucede, cuando crees ese pensamiento?</h3>
+                        <p id="summary-answer-3" class="mt-1 whitespace-pre-wrap text-slate-300"></p>
+                    </div>
+                     <div class="p-4 bg-slate-700/50 rounded-lg border border-slate-600">
+                        <h3 class="font-bold text-slate-200">4. ¿Quién serías sin el pensamiento?</h3>
+                        <p id="summary-answer-4" class="mt-1 whitespace-pre-wrap text-slate-300"></p>
+                    </div>
+                    <div class="p-4 bg-green-900/30 rounded-lg border border-green-600/30">
+                        <h3 class="font-bold text-green-300">La Inversión:</h3>
+                        <p id="summary-turnaround" class="mt-1 whitespace-pre-wrap text-green-200"></p>
+                    </div>
+                </div>
+                
+                <!-- Action Buttons -->
+                <div class="space-y-3">
+                    <button onclick="copyToClipboard(event)" class="w-full bg-blue-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition">
+                        📋 Copiar Resumen
+                    </button>
+                    <div class="flex space-x-3">
+                        <button onclick="goBack()" class="bg-slate-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-500 transition">
+                            ← Atrás
+                        </button>
+                        <button onclick="restart()" class="flex-1 bg-slate-700 text-white font-bold py-3 px-4 rounded-lg hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-500 transition">
+                            Hacer otro Trabajo
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+        <footer class="text-center mt-6 text-sm text-slate-400">
+            <p>Inspirado en "The Work" de Byron Katie. Úsalo como una herramienta de meditación, no como un sustituto de la terapia profesional.</p>
+        </footer>
+    </main>
+
+<script>
+    // State management
+    let currentStep = 0;
+    const userAnswers = {
+        thought: '',
+        q1: '',
+        q2: '',
+        q3: '',
+        q4: '',
+        turnaround: ''
+    };
+
+    // Auto-save settings
+    let autoSaveTimer;
+    const AUTO_SAVE_DELAY = 2000; // 2 seconds after typing stops
+
+    // DOM Elements
+    const step0 = document.getElementById('step-0');
+    const questionsContainer = document.getElementById('questions-container');
+    const turnaroundContainer = document.getElementById('turnaround-container');
+    const summaryContainer = document.getElementById('summary-container');
+    const progressContainer = document.getElementById('progress-container');
+    const recoveryBanner = document.getElementById('recovery-banner');
+    
+    const thoughtInput = document.getElementById('thought');
+    const thoughtError = document.getElementById('thought-error');
+    
+    const thoughtDisplay = document.getElementById('thought-display');
+    const questionTitle = document.getElementById('question-title');
+    const questionSubtitle = document.getElementById('question-subtitle');
+    const answerInput = document.getElementById('answer');
+    
+    const yesNoButtons = document.getElementById('yes-no-buttons');
+    const nextButton = document.getElementById('next-button');
+    const backButton = document.getElementById('back-button');
+
+    // Questions Data
+    const questions = [
+        { title: 'Pregunta 1', text: '¿Es verdad?', subtitle: 'La realidad es lo que es. Permítete contestar con un simple "sí" o "no".' },
+        { title: 'Pregunta 2', text: '¿Puedes saber que es verdad con absoluta certeza?', subtitle: 'De nuevo, un "sí" o "un no". Es una oportunidad para ir más allá de lo que crees saber.' },
+        { title: 'Pregunta 3', text: '¿Cómo reaccionas, qué sucede, cuando crees ese pensamiento?', subtitle: 'Observa sin juicio. ¿Qué emociones surgen? ¿Cómo tratas a la otra persona y a ti mismo/a. ¿Qué imágenes del pasado y del futuro ves?' },
+        { title: 'Pregunta 4', text: '¿Quién serías sin el pensamiento?', subtitle: 'Cierra los ojos. Imagina tu vida en ese momento, sin ese pensamiento. ¿Qué ves? ¿Cómo te sientes? ¿Cómo sería tu vida sin esa historia?' }
+    ];
+
+    // Progress and persistence functions
+    function updateProgress() {
+        const totalSteps = 6;
+        const progress = (currentStep / totalSteps) * 100;
+        
+        document.getElementById('progress-bar').style.width = `${progress}%`;
+        document.getElementById('progress-text').textContent = `Paso ${currentStep} de ${totalSteps}`;
+        
+        // Update step indicators
+        document.querySelectorAll('.step-indicator').forEach((indicator, index) => {
+            indicator.classList.remove('active', 'completed');
+            if (index < currentStep) {
+                indicator.classList.add('completed');
+            } else if (index === currentStep) {
+                indicator.classList.add('active');
+            }
+        });
+    }
+
+    function saveToLocalStorage() {
+        const sessionData = {
+            currentStep,
+            userAnswers: {...userAnswers},
+            timestamp: Date.now()
+        };
+        localStorage.setItem('theWorkSession', JSON.stringify(sessionData));
+        showAutoSaveIndicator();
+    }
+
+    function loadFromLocalStorage() {
+        const savedData = localStorage.getItem('theWorkSession');
+        if (savedData) {
+            const sessionData = JSON.parse(savedData);
+            // Check if session is less than 24 hours old
+            if (Date.now() - sessionData.timestamp < 24 * 60 * 60 * 1000) {
+                return sessionData;
+            }
+        }
+        return null;
+    }
+
+    function clearLocalStorage() {
+        localStorage.removeItem('theWorkSession');
+    }
+
+    function showAutoSaveIndicator() {
+        const indicator = document.getElementById('auto-save-indicator');
+        indicator.classList.add('show');
+        setTimeout(() => {
+            indicator.classList.remove('show');
+        }, 2000);
+    }
+
+    function setupAutoSave() {
+        // Auto-save on input changes
+        const inputs = [thoughtInput, answerInput, document.getElementById('turnaround')];
+        
+        inputs.forEach(input => {
+            if (input) {
+                input.addEventListener('input', () => {
+                    clearTimeout(autoSaveTimer);
+                    autoSaveTimer = setTimeout(() => {
+                        // Update userAnswers based on current step
+                        if (currentStep === 0) {
+                            userAnswers.thought = thoughtInput.value;
+                        } else if (currentStep === 3 || currentStep === 4) {
+                            userAnswers[`q${currentStep}`] = answerInput.value;
+                        } else if (currentStep === 5) {
+                            userAnswers.turnaround = document.getElementById('turnaround').value;
+                        }
+                        saveToLocalStorage();
+                    }, AUTO_SAVE_DELAY);
+                });
+            }
+        });
+    }
+
+    function startWork() {
+        if (thoughtInput.value.trim() === '') {
+            thoughtError.classList.remove('hidden');
+            return;
+        }
+        thoughtError.classList.add('hidden');
+        userAnswers.thought = thoughtInput.value;
+        
+        currentStep = 1;
+        step0.classList.add('hidden');
+        questionsContainer.classList.remove('hidden');
+        questionsContainer.classList.add('fade-in');
+        progressContainer.classList.remove('hidden');
+
+        thoughtDisplay.textContent = userAnswers.thought;
+        displayQuestion();
+        updateProgress();
+        saveToLocalStorage();
+    }
+
+    function displayQuestion() {
+        const q = questions[currentStep - 1];
+        questionTitle.textContent = `${q.title}: ${q.text}`;
+        questionSubtitle.textContent = q.subtitle;
+        
+        // Load existing answer if available
+        const existingAnswer = userAnswers[`q${currentStep}`];
+        answerInput.value = existingAnswer || '';
+        
+        // Show Yes/No for first two questions
+        if (currentStep === 1 || currentStep === 2) {
+            yesNoButtons.style.display = 'flex';
+            answerInput.classList.add('hidden');
+            nextButton.classList.add('hidden');
+            
+            // Show current answer if exists
+            if (existingAnswer) {
+                nextButton.classList.remove('hidden');
+                const buttons = yesNoButtons.querySelectorAll('button');
+                buttons.forEach(btn => {
+                    btn.classList.remove('ring-4', 'ring-offset-2');
+                    if ((btn.textContent === 'Sí' && existingAnswer === 'Sí') ||
+                        (btn.textContent === 'No' && existingAnswer === 'No')) {
+                        btn.classList.add('ring-4', 'ring-offset-2', 'ring-indigo-300');
+                    }
+                });
+            }
+        } else {
+            yesNoButtons.style.display = 'none';
+            answerInput.classList.remove('hidden');
+            nextButton.classList.remove('hidden');
+        }
+        
+        // Show/hide back button
+        backButton.style.display = currentStep > 1 ? 'block' : 'none';
+        
+        questionTitle.parentElement.classList.remove('fade-in');
+        void questionTitle.parentElement.offsetWidth; // Trigger reflow
+        questionTitle.parentElement.classList.add('fade-in');
+    }
+    
+    function answerYesNo(answer) {
+        userAnswers[`q${currentStep}`] = answer ? 'Sí' : 'No';
+        
+        // Visual feedback
+        const buttons = yesNoButtons.querySelectorAll('button');
+        buttons.forEach(btn => {
+            btn.classList.remove('ring-4', 'ring-offset-2', 'ring-indigo-300');
+            if ((btn.textContent === 'Sí' && answer) ||
+                (btn.textContent === 'No' && !answer)) {
+                btn.classList.add('ring-4', 'ring-offset-2', 'ring-indigo-300');
+            }
+        });
+        
+        nextButton.classList.remove('hidden');
+        saveToLocalStorage();
+    }
+
+    function nextStep() {
+        // Save answer for current step
+        if (currentStep === 3 || currentStep === 4) {
+            userAnswers[`q${currentStep}`] = answerInput.value;
+        }
+
+        currentStep++;
+        updateProgress();
+
+        if (currentStep <= 4) {
+            displayQuestion();
+        } else {
+            questionsContainer.classList.add('hidden');
+            turnaroundContainer.classList.remove('hidden');
+            turnaroundContainer.classList.add('fade-in');
+            document.getElementById('turnaround-thought-display').textContent = userAnswers.thought;
+            
+            // Load existing turnaround if available
+            document.getElementById('turnaround').value = userAnswers.turnaround || '';
+        }
+        
+        saveToLocalStorage();
+    }
+
+    function goBack() {
+        if (currentStep <= 1) return;
+
+        // Save current answer before going back
+        if (currentStep === 3 || currentStep === 4) {
+            userAnswers[`q${currentStep}`] = answerInput.value;
+        } else if (currentStep === 5) {
+            userAnswers.turnaround = document.getElementById('turnaround').value;
+        }
+
+        currentStep--;
+        updateProgress();
+
+        if (currentStep === 0) {
+            questionsContainer.classList.add('hidden');
+            turnaroundContainer.classList.add('hidden');
+            summaryContainer.classList.add('hidden');
+            progressContainer.classList.add('hidden');
+            step0.classList.remove('hidden');
+        } else if (currentStep <= 4) {
+            turnaroundContainer.classList.add('hidden');
+            summaryContainer.classList.add('hidden');
+            questionsContainer.classList.remove('hidden');
+            displayQuestion();
+        } else if (currentStep === 5) {
+            summaryContainer.classList.add('hidden');
+            turnaroundContainer.classList.remove('hidden');
+        }
+        
+        saveToLocalStorage();
+    }
+    
+    function showSummary() {
+        userAnswers.turnaround = document.getElementById('turnaround').value;
+        
+        currentStep = 6;
+        updateProgress();
+        
+        turnaroundContainer.classList.add('hidden');
+        summaryContainer.classList.remove('hidden');
+        summaryContainer.classList.add('fade-in');
+
+        document.getElementById('summary-thought').textContent = userAnswers.thought;
+        document.getElementById('summary-answer-1').textContent = userAnswers.q1 || '(Sin respuesta)';
+        document.getElementById('summary-answer-2').textContent = userAnswers.q2 || '(Sin respuesta)';
+        document.getElementById('summary-answer-3').textContent = userAnswers.q3 || '(Sin respuesta)';
+        document.getElementById('summary-answer-4').textContent = userAnswers.q4 || '(Sin respuesta)';
+        document.getElementById('summary-turnaround').textContent = userAnswers.turnaround || '(Sin respuesta)';
+        
+        saveToLocalStorage();
+    }
+
+    function copyToClipboard(event) {
+        const summary = `THE WORK - MI INDAGACIÓN
+
+Pensamiento: ${userAnswers.thought}
+
+1. ¿Es verdad?
+${userAnswers.q1 || '(Sin respuesta)'}
+
+2. ¿Puedes saber que es verdad con absoluta certeza?
+${userAnswers.q2 || '(Sin respuesta)'}
+
+3. ¿Cómo reaccionas, qué sucede, cuando crees ese pensamiento?
+${userAnswers.q3 || '(Sin respuesta)'}
+
+4. ¿Quién serías sin el pensamiento?
+${userAnswers.q4 || '(Sin respuesta)'}
+
+La Inversión:
+${userAnswers.turnaround || '(Sin respuesta)'}
+
+---
+Generado con The Work - Las Cuatro Preguntas
+`;
+
+        if (navigator.clipboard && window.isSecureContext) {
+            navigator.clipboard.writeText(summary).then(() => {
+                // Visual feedback
+                const button = event ? event.target : document.querySelector('button[onclick*="copyToClipboard"]');
+                const originalText = button.textContent;
+                button.textContent = '✓ Copiado!';
+                button.classList.add('bg-green-600');
+                button.classList.remove('bg-blue-600');
+                
+                setTimeout(() => {
+                    button.textContent = originalText;
+                    button.classList.remove('bg-green-600');
+                    button.classList.add('bg-blue-600');
+                }, 2000);
+            }).catch(() => {
+                // Fallback method
+                fallbackCopy(summary);
+            });
+        } else {
+            // Fallback method
+            fallbackCopy(summary);
+        }
+    }
+
+    function fallbackCopy(text) {
+        const textArea = document.createElement('textarea');
+        textArea.value = text;
+        textArea.style.position = 'fixed';
+        textArea.style.opacity = '0';
+        document.body.appendChild(textArea);
+        textArea.select();
+        
+        try {
+            document.execCommand('copy');
+            const button = document.querySelector('button[onclick*="copyToClipboard"]');
+            const originalText = button.textContent;
+            button.textContent = '✓ Copiado!';
+            button.classList.add('bg-green-600');
+            button.classList.remove('bg-blue-600');
+            
+            setTimeout(() => {
+                button.textContent = originalText;
+                button.classList.remove('bg-green-600');
+                button.classList.add('bg-blue-600');
+            }, 2000);
+        } catch (err) {
+            alert('No se pudo copiar al portapapeles. Por favor, selecciona y copia manualmente el siguiente texto:\n\n' + text);
+        } finally {
+            document.body.removeChild(textArea);
+        }
+    }
+
+    function restart() {
+        // Reset state
+        currentStep = 0;
+        for (const key in userAnswers) {
+            userAnswers[key] = '';
+        }
+        
+        // Reset UI
+        thoughtInput.value = '';
+        answerInput.value = '';
+        document.getElementById('turnaround').value = '';
+        
+        summaryContainer.classList.add('hidden');
+        questionsContainer.classList.add('hidden');
+        turnaroundContainer.classList.add('hidden');
+        progressContainer.classList.add('hidden');
+        recoveryBanner.classList.add('hidden');
+        
+        step0.classList.remove('hidden');
+        step0.classList.add('fade-in');
+
+        // Clear saved session
+        clearLocalStorage();
+        updateProgress();
+    }
+
+    function loadPreviousSession() {
+        const savedData = loadFromLocalStorage();
+        if (savedData) {
+            currentStep = savedData.currentStep;
+            Object.assign(userAnswers, savedData.userAnswers);
+            
+            // Restore UI state
+            thoughtInput.value = userAnswers.thought || '';
+            
+            if (currentStep === 0) {
+                // Stay on initial screen
+                recoveryBanner.classList.add('hidden');
+            } else if (currentStep <= 4) {
+                step0.classList.add('hidden');
+                questionsContainer.classList.remove('hidden');
+                progressContainer.classList.remove('hidden');
+                thoughtDisplay.textContent = userAnswers.thought;
+                displayQuestion();
+                updateProgress();
+            } else if (currentStep === 5) {
+                step0.classList.add('hidden');
+                turnaroundContainer.classList.remove('hidden');
+                progressContainer.classList.remove('hidden');
+                document.getElementById('turnaround-thought-display').textContent = userAnswers.thought;
+                document.getElementById('turnaround').value = userAnswers.turnaround || '';
+                updateProgress();
+            } else if (currentStep === 6) {
+                step0.classList.add('hidden');
+                summaryContainer.classList.remove('hidden');
+                progressContainer.classList.remove('hidden');
+                showSummary();
+            }
+        }
+        recoveryBanner.classList.add('hidden');
+    }
+
+    function startFresh() {
+        clearLocalStorage();
+        recoveryBanner.classList.add('hidden');
+    }
+    
+    // Initial setup
+    window.onload = () => {
+        // Check for existing session
+        const savedData = loadFromLocalStorage();
+        if (savedData && (savedData.currentStep > 0 || savedData.userAnswers.thought)) {
+            recoveryBanner.classList.remove('hidden');
+        }
+        
+        // Setup auto-save
+        setupAutoSave();
+        updateProgress();
+    };
+
+</script>
+</body>
+</html>
