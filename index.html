@@ -141,8 +141,17 @@
                 </div>
                 <div class="space-y-4">
                     <label for="thought" class="block text-lg font-medium text-slate-200">¿Cuál es tu pensamiento estresante?</label>
+                    <div class="p-3 bg-blue-900/20 border border-blue-600/30 rounded-lg mb-4">
+                        <p class="text-sm text-blue-200 mb-2">💡 <strong>Consejos para elegir un buen pensamiento:</strong></p>
+                        <ul class="text-xs text-blue-300 space-y-1 ml-4">
+                            <li>• Sé específico: "Mi hermana no me llamó ayer" vs "Mi hermana no me quiere"</li>
+                            <li>• Incluye nombres y situaciones concretas</li>
+                            <li>• Elige algo que realmente te moleste (7-10 en escala de estrés)</li>
+                            <li>• Evita preguntas: mejor "Él debería..." que "¿Por qué él...?"</li>
+                        </ul>
+                    </div>
                     <p class="text-sm text-slate-400">Ejemplo: "Mi pareja no me escucha", "No soy lo suficientemente bueno/a", "Mi jefe no me valora".</p>
-                    <textarea id="thought" class="w-full p-3 border rounded-lg focus:ring-2 transition" rows="3" placeholder="Escribe aquí tu pensamiento..."></textarea>
+                    <textarea id="thought" class="w-full p-3 border rounded-lg focus:ring-2 transition" rows="3" placeholder="Escribe aquí tu pensamiento específico y estresante..."></textarea>
                     <div id="thought-error" class="text-red-400 text-sm hidden">Por favor, escribe un pensamiento para comenzar.</div>
                 </div>
                 <button onclick="startWork()" class="w-full bg-blue-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-transform transform hover:scale-105">
@@ -159,6 +168,13 @@
                 <div id="question-card" class="space-y-4 fade-in">
                     <h2 id="question-title" class="text-xl md:text-2xl font-bold text-slate-100"></h2>
                     <p id="question-subtitle" class="text-slate-300"></p>
+                    
+                    <!-- Help Section for Current Question -->
+                    <div id="question-help" class="p-3 bg-green-900/20 border border-green-600/30 rounded-lg">
+                        <div id="help-text" class="text-sm text-green-200 mb-2"></div>
+                        <div id="mistake-text" class="text-sm text-yellow-200"></div>
+                    </div>
+                    
                     <textarea id="answer" class="w-full p-3 border rounded-lg focus:ring-2 transition" rows="6" placeholder="Tómate tu tiempo. Siente la respuesta antes de escribir..."></textarea>
                 </div>
                  <div id="yes-no-buttons" class="hidden justify-center space-x-4">
@@ -188,8 +204,18 @@
                 </div>
                 <div class="space-y-4">
                     <label for="turnaround" class="block text-lg font-medium text-slate-200">Escribe la inversión.</label>
+                    <div class="p-3 bg-purple-900/20 border border-purple-600/30 rounded-lg mb-4">
+                        <p class="text-sm text-purple-200 mb-2">💡 <strong>Consejos para una buena inversión:</strong></p>
+                        <ul class="text-xs text-purple-300 space-y-1 ml-4">
+                            <li>• <strong>Hacia ti:</strong> "Mi hermana no me escucha" → "Yo no me escucho"</li>
+                            <li>• <strong>Hacia el otro:</strong> "Mi hermana no me escucha" → "Yo no escucho a mi hermana"</li>
+                            <li>• <strong>Lo opuesto:</strong> "Mi hermana no me escucha" → "Mi hermana sí me escucha"</li>
+                            <li>• Encuentra 3 ejemplos específicos y genuinos de cómo es verdad</li>
+                            <li>• Si no resuena, prueba otra inversión</li>
+                        </ul>
+                    </div>
                     <p class="text-sm text-slate-400">Invierte el pensamiento hacia ti, hacia el otro, o dale la vuelta por completo. Encuentra 3 ejemplos específicos y genuinos de cómo esta inversión es verdadera en tu vida.</p>
-                    <textarea id="turnaround" class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-green-500 transition" rows="6" placeholder="Ej: 'Yo no me escucho a mí mismo/a.'..."></textarea>
+                    <textarea id="turnaround" class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-green-500 transition" rows="6" placeholder="Ej: 'Yo no me escucho a mí mismo/a.' Luego describe 3 ejemplos específicos..."></textarea>
                 </div>
                 <!-- Navigation Buttons -->
                 <div class="flex space-x-3">
@@ -293,12 +319,36 @@
     const nextButton = document.getElementById('next-button');
     const backButton = document.getElementById('back-button');
 
-    // Questions Data
+    // Questions Data with enhanced guidance
     const questions = [
-        { title: 'Pregunta 1', text: '¿Es verdad?', subtitle: 'La realidad es lo que es. Permítete contestar con un simple "sí" o "no".' },
-        { title: 'Pregunta 2', text: '¿Puedes saber que es verdad con absoluta certeza?', subtitle: 'De nuevo, un "sí" o "un no". Es una oportunidad para ir más allá de lo que crees saber.' },
-        { title: 'Pregunta 3', text: '¿Cómo reaccionas, qué sucede, cuando crees ese pensamiento?', subtitle: 'Observa sin juicio. ¿Qué emociones surgen? ¿Cómo tratas a la otra persona y a ti mismo/a. ¿Qué imágenes del pasado y del futuro ves?' },
-        { title: 'Pregunta 4', text: '¿Quién serías sin el pensamiento?', subtitle: 'Cierra los ojos. Imagina tu vida en ese momento, sin ese pensamiento. ¿Qué ves? ¿Cómo te sientes? ¿Cómo sería tu vida sin esa historia?' }
+        { 
+            title: 'Pregunta 1', 
+            text: '¿Es verdad?', 
+            subtitle: 'La realidad es lo que es. Permítete contestar con un simple "sí" o "no".',
+            helpText: '💡 <strong>Consejo:</strong> Tu mente querrá argumentar y justificar. Simplemente responde desde tu primera impresión. No hay respuestas correctas o incorrectas.',
+            commonMistake: '⚠️ <strong>Evita:</strong> Analizar demasiado o buscar evidencias. Esta pregunta se responde intuitivamente con "sí" o "no".'
+        },
+        { 
+            title: 'Pregunta 2', 
+            text: '¿Puedes saber que es verdad con absoluta certeza?', 
+            subtitle: 'De nuevo, un "sí" o "un no". Es una oportunidad para ir más allá de lo que crees saber.',
+            helpText: '💡 <strong>Consejo:</strong> Aunque hayas respondido "sí" a la primera pregunta, ¿realmente puedes estar 100% seguro/a? La mayoría de nuestros pensamientos son interpretaciones, no hechos absolutos.',
+            commonMistake: '⚠️ <strong>Evita:</strong> Confundir "muy probable" con "certeza absoluta". Si hay aunque sea un 1% de duda, la respuesta es "no".'
+        },
+        { 
+            title: 'Pregunta 3', 
+            text: '¿Cómo reaccionas, qué sucede, cuando crees ese pensamiento?', 
+            subtitle: 'Observa sin juicio. ¿Qué emociones surgen? ¿Cómo tratas a la otra persona y a ti mismo/a? ¿Qué imágenes del pasado y del futuro ves?',
+            helpText: '💡 <strong>Consejo:</strong> Describe emociones específicas (ira, tristeza, miedo), sensaciones físicas (tensión, vacío en el estómago), y comportamientos concretos. Sé honesto/a sobre cómo actúas cuando crees este pensamiento.',
+            commonMistake: '⚠️ <strong>Evita:</strong> Respuestas vagas como "me siento mal". Describe exactamente qué sientes y cómo actúas. También evita justificar tus reacciones.'
+        },
+        { 
+            title: 'Pregunta 4', 
+            text: '¿Quién serías sin el pensamiento?', 
+            subtitle: 'Cierra los ojos. Imagina tu vida en ese momento, sin ese pensamiento. ¿Qué ves? ¿Cómo te sientes? ¿Cómo sería tu vida sin esa historia?',
+            helpText: '💡 <strong>Consejo:</strong> Imagínate en la misma situación, pero sin poder pensar ese pensamiento. ¿Cómo te sentirías? ¿Cómo actuarías? Describe la sensación de libertad que podría surgir.',
+            commonMistake: '⚠️ <strong>Evita:</strong> Decir "no podría vivir sin ese pensamiento" o pensar que es imposible. Simplemente imagina por un momento esa posibilidad.'
+        }
     ];
 
     // Progress and persistence functions
@@ -403,6 +453,10 @@
         questionTitle.textContent = `${q.title}: ${q.text}`;
         questionSubtitle.textContent = q.subtitle;
         
+        // Update help section
+        document.getElementById('help-text').innerHTML = q.helpText;
+        document.getElementById('mistake-text').innerHTML = q.commonMistake;
+        
         // Load existing answer if available
         const existingAnswer = userAnswers[`q${currentStep}`];
         answerInput.value = existingAnswer || '';
@@ -412,6 +466,7 @@
             yesNoButtons.style.display = 'flex';
             answerInput.classList.add('hidden');
             nextButton.classList.add('hidden');
+            document.getElementById('question-help').classList.remove('hidden');
             
             // Show current answer if exists
             if (existingAnswer) {
@@ -429,6 +484,14 @@
             yesNoButtons.style.display = 'none';
             answerInput.classList.remove('hidden');
             nextButton.classList.remove('hidden');
+            document.getElementById('question-help').classList.remove('hidden');
+            
+            // Update placeholder for deeper questions
+            if (currentStep === 3) {
+                answerInput.placeholder = "Describe tus emociones, sensaciones físicas y comportamientos específicos...";
+            } else if (currentStep === 4) {
+                answerInput.placeholder = "Imagina esa situación sin ese pensamiento. ¿Cómo te sientes? ¿Cómo actúas?";
+            }
         }
         
         // Show/hide back button
